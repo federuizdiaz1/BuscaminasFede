@@ -143,7 +143,13 @@ export default {
                         cuadro.vecinos.push(i+columnas)
                         cuadro.vecinos.push(i+columnas+1)
                     }
-                    else if(cuadro.fila==filas){
+                    else if(cuadro.fila==filas){ 
+                        cuadro.vecinos.push(i-1)
+                        cuadro.vecinos.push(i+1)
+                        cuadro.vecinos.push(i+columnas-1)
+                        cuadro.vecinos.push(i+columnas)
+                        cuadro.vecinos.push(i+columnas+1)
+                    }else{
                         cuadro.vecinos.push(i-1)
                         cuadro.vecinos.push(i+1)
                         cuadro.vecinos.push(i+columnas-1)
