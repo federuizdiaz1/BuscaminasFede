@@ -4,7 +4,7 @@
         <span>Nivel:
         </span>
         <span @click="seleccionarNivel(1)" class="nivel" :class="{'nivel-seleccionado':nivelActual.nivel == 1}">1</span>
-        <span @click="seleccionarNivel(2)" class="nivel"  :class="{'nivel-seleccionado':nivelActual.nivel == 2}">2</span>
+        <span @click="seleccionarNivel(2)" class="nivel" :class="{'nivel-seleccionado':nivelActual.nivel == 2}">2</span>
         <span @click="seleccionarNivel(3)" class="nivel" :class="{'nivel-seleccionado':nivelActual.nivel == 3}">3</span>
         </div>
         <div class="panel"> <!-- elemento panel -->
@@ -19,7 +19,7 @@
         </div>
         <div class="matriz"> <!-- elemento matriz -->
             <!-- pintar el objeto cuadro en la matriz --> 
-            <cuadro :info="item" v-for="(item, index) in cuadros" :key="index" :style="'grid-row: ' + item.fila+';grid-column:'+item.columna+';'" />
+            <cuadro @onActivar="activarCuadro" :info="item" v-for="(item, index) in cuadros" :key="index" :style="'grid-row: ' + item.fila+';grid-column:'+item.columna+';'" />
      </div>
     </div>
 </template>
@@ -75,6 +75,8 @@ export default {
             let indices = []
             for (let i = 0 ; i < totalCuadros; i++){
                 let cuadro = {
+                    inicial:true,
+                    bandera:false,
                     valor: "",
                     fila: Math.floor(i/columnas)+1, /** math.floor corta los decimales y deja los enteros */
                     columna: (i % columnas)+1,
@@ -162,10 +164,25 @@ export default {
                 }
                 if(cuadro.valor !="💣"){
                     let minas = cuadro.vecinos.filter(v=>this.cuadros[v].valor=="💣").length /*Operacion de retorno de un arreglo con todos los vecinos que sean minas(cantidad) */ 
+                    
                     if(minas>0){
                         cuadro.valor=minas
-                        cuadro.claseValor=this.colores[minas]
+                        cuadro.claseValor='numero '+this.colores[minas]
                     }
+                }
+            }
+        },
+        activarCuadro(cuadro){
+            if(cuadro.inicial && !cuadro.bandera){
+                cuadro.inicial=false
+
+                if(cuadro.valor=="💣"){
+                    //Explosion
+                }
+                else if(cuadro.valor==''){
+                    cuadro.vecinos.forEach(v=>{
+                       this.activarCuadro(this.cuadros[v]) 
+                    })
                 }
             }
         }
@@ -179,10 +196,14 @@ export default {
     .html{
        font-family: 'Roboto', sans-serif; 
     }
+    .numero{
+        font-size: 20px;
+        font-weight: bold;
+    }
     .uno{color:teal;}
     .dos{color:thistle;}
     .tres{color:tomato;}
-    .cuatro{color:blue;}
+    .cuatro{color:rgb(204, 0, 255);}
     .cinco{color:violet;}
     .seis{color:yellowgreen;}
     .siete{color:brown;}
@@ -249,6 +270,14 @@ justify-self: end;
     .matriz{
         display: grid;
         background-color:darkslategray;
+        padding: 2px;
+        margin-top: 10px;
+        border-top-color: aquamarine;
+        border-left-color: aquamarine;
+        border-bottom-color: cadetblue;
+        border-right-color: cornflowerblue;
+        border-style:solid;
+        border-width: 3px;
        
     }
 </style>
