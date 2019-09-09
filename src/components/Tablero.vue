@@ -8,23 +8,24 @@
         <span @click="seleccionarNivel(3)" class="nivel" :class="{'nivel-seleccionado':nivelActual.nivel == 3}">3</span>
         </div>
         <div class="panel"> <!-- elemento panel -->
-        <div class="marcador minas-restantes"> 999</div>
+        <div class="marcador minas-restantes"> {{minasRestantesCifras}}</div>
        
         
-        <div class="cara">
+        <div class="cara" @click="iniciarNivel">
             <span style='font-size:30px;'>&#x1F920;</span></div>
-        <div class="marcador segundos"> 999</div>
+        <div class="marcador segundos">{{segundosCifras}}</div>
         
        
         </div>
         <div class="matriz"> <!-- elemento matriz -->
             <!-- pintar el objeto cuadro en la matriz --> 
-            <cuadro @onActivar="activarCuadro" :info="item" v-for="(item, index) in cuadros" :key="index" :style="'grid-row: ' + item.fila+';grid-column:'+item.columna+';'" />
+            <cuadro @onCambiarMinasRestantes="cambiarMinasRestantes" @onActivar="activarCuadro" :info="item" v-for="(item, index) in cuadros" :key="index" :style="'grid-row: ' + item.fila+';grid-column:'+item.columna+';'" />
      </div>
     </div>
 </template>
 <script>/* Importamos el componente 'Cuadro' */
 import Cuadro from './Cuadro.vue'
+
 export default {
     components: {Cuadro},
     data(){
@@ -50,14 +51,50 @@ export default {
                 minas: 30
             },
             nivelActual: null,
-            minas:[]
+            minas:[],
+            minasRestantes:0,
+            segundos:0,
+            inicio:false,
+            //timer es una variable que podremos pausar una vez perdamos o ganemos
+            timer:null
     } 
-    }, /* created se invoca cuando la parte inteligente del componente está lista(Es un estado) */
+    },
+    computed: {
+        minasRestantesCifras(){
+            let cifras=this.minasRestantes.toString()
+
+
+            if(cifras.length==1){
+                cifras='00' + cifras
+            }
+            else if(cifras.length==2){
+                cifras = '0' + cifras
+            }
+            return cifras
+        },
+        segundosCifras(){
+            let cifras=this.segundos.toString()
+            
+            if(cifras.length==1){
+                cifras='00' + cifras
+            }
+            else if(cifras.length==2){
+                cifras = '0' + cifras
+            }
+            return cifras
+        }
+    },
+     /* created se invoca cuando la parte inteligente del componente está lista(Es un estado) */
     created() {
         this.nivelActual = this.nivelPrincipiante
         this.iniciarNivel() 
     },
     methods: {
+        detenerTiempo(){
+            if(this.timer){
+                clearInterval(this.timer)
+            }
+        },
                 /*seleccionar el nivel*/
         seleccionarNivel(nivel){
         if (this.nivelActual.nivel ==nivel){return}
@@ -67,6 +104,10 @@ export default {
         this.iniciarNivel()
         },
         iniciarNivel(){
+            this.detenerTiempo()
+            this.minasRestantes=this.nivelActual.minas
+            this.segundos=0
+            this.inicio=false
             let filas = this.nivelActual.filas
             let columnas = this.nivelActual.columnas
             let totalCuadros = filas * columnas
@@ -175,6 +216,12 @@ export default {
         activarCuadro(cuadro){
             if(cuadro.inicial && !cuadro.bandera){
                 cuadro.inicial=false
+                if(!this.inicio){
+                    this.timer = setInterval(()=>{
+                        this.segundos++
+                    },1000)
+                    this.inicio=true
+                }
 
                 if(cuadro.valor=="💣"){
                     //Explosion
@@ -185,6 +232,9 @@ export default {
                     })
                 }
             }
+        },
+        cambiarMinasRestantes(cantidad){
+            this.minasRestantes += cantidad
         }
     }
 }
@@ -214,6 +264,7 @@ export default {
         justify-content: center;
         background-color: cornflowerblue;
         padding: 10px;
+        user-select: none;
     }
     .niveles{
         display: grid;
@@ -246,12 +297,27 @@ export default {
         display: grid;
         grid-auto-flow: column;
         font-size: 30px;
+        margin-top: 10px;
+        padding:10px;
+        border-top-color: aqua;
+        border-left-color: antiquewhite;
+        border-bottom-color: aquamarine;
+        border-right-color: aliceblue;
+        border-style: solid;
+        border-width: 2px;
 
     }
     .marcador{
          background-color: black;
          color:red;
          height: 40px;
+         padding:2px;
+        border-top-color: aqua;
+        border-left-color:  aquamarine;
+        border-bottom-color: rebeccapurple;
+        border-right-color: aliceblue;
+        border-style: solid;
+        border-width: 1px;
     }
     .minas-restantes{
         justify-self: start;
@@ -263,6 +329,16 @@ export default {
         justify-self: center;
         width: 40px;
         height: 40px;
+        font-size:24px;
+        border-top-color: aqua;
+        border-left-color: antiquewhite;
+        border-bottom-color:  aquamarine;
+        border-right-color: aliceblue;
+        border-style: solid;
+        border-width: 2px;
+        cursor:pointer;
+
+
     }
     .segundos{ 
 justify-self: end;
